@@ -19,6 +19,7 @@ No dependencies beyond stock macOS python3; notifications via osascript.
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -132,11 +133,17 @@ def notify(cfg, title, msg):
     if not cfg.get("macos_notifications") or sys.platform != "darwin":
         return
     try:
-        subprocess.run(
-            ["osascript", "-e",
-             'display notification "%s" with title "%s"' % (_osa_escape(msg), _osa_escape(title))],
-            capture_output=True, timeout=5,
-        )
+        # Prefer terminal-notifier when available: clicking its notifications
+        # does nothing, whereas osascript notifications open Script Editor.
+        if shutil.which("terminal-notifier"):
+            subprocess.run(["terminal-notifier", "-title", title, "-message", msg],
+                           capture_output=True, timeout=5)
+        else:
+            subprocess.run(
+                ["osascript", "-e",
+                 'display notification "%s" with title "%s"' % (_osa_escape(msg), _osa_escape(title))],
+                capture_output=True, timeout=5,
+            )
     except (OSError, subprocess.SubprocessError):
         pass
 

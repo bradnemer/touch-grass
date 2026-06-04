@@ -27,6 +27,8 @@ claude --plugin-dir /path/to/touch-grass
 
 Requires macOS for notifications (`osascript`); everything else works anywhere `python3` exists. No other dependencies.
 
+Optional: `brew install terminal-notifier` — when present, notifications use it instead of `osascript`, so clicking them does nothing (raw `osascript` notifications open Script Editor on click; macOS offers no way around that).
+
 ## Usage
 
 ```
