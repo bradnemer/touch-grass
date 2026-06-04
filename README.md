@@ -1,5 +1,7 @@
 # 🌱 touch-grass
 
+**[bradnemer.github.io/touch-grass](https://bradnemer.github.io/touch-grass/)**
+
 A Claude Code plugin that makes you take breaks. Three escalating levels of intervention:
 
 1. **Stretch reminders** — after 60 minutes of active work, Claude opens its next response by telling you to stand up and stretch (plus a macOS notification).
