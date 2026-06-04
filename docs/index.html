@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>touch-grass — the Claude Code plugin that makes you take breaks</title>
+<meta name="description" content="Stretch reminders, walk suggestions, and a hard-block penalty box for Claude Code. Your health, enforced by hooks.">
+<meta property="og:title" content="🌱 touch-grass">
+<meta property="og:description" content="The Claude Code plugin that makes you take breaks — whether you like it or not.">
+<style>
+  :root {
+    --grass: #3e9b4f;
+    --grass-dark: #2c7a3a;
+    --grass-light: #e8f5ea;
+    --ink: #1a2b1e;
+    --ink-soft: #4a5d4e;
+    --paper: #fbfdf9;
+    --card: #ffffff;
+    --border: #dcebde;
+    --code-bg: #14241a;
+    --code-ink: #b8e6c1;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+  header {
+    background: linear-gradient(160deg, #f2faf3 0%, #ddf0e0 60%, #cdeed3 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 88px 0 72px;
+    text-align: center;
+  }
+  .leaf { font-size: 64px; line-height: 1; }
+  h1 {
+    font-size: clamp(40px, 7vw, 64px);
+    letter-spacing: -0.03em;
+    margin: 12px 0 8px;
+  }
+  h1 .accent { color: var(--grass-dark); }
+  .tagline {
+    font-size: clamp(18px, 3vw, 23px);
+    color: var(--ink-soft);
+    max-width: 560px;
+    margin: 0 auto 36px;
+  }
+  .tagline strong { color: var(--ink); }
+
+  .install-box {
+    display: inline-block;
+    text-align: left;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 12px;
+    padding: 18px 26px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 15px;
+    box-shadow: 0 10px 30px rgba(44, 122, 58, .18);
+  }
+  .install-box .dim { color: #6c8f76; user-select: none; }
+  .hero-links { margin-top: 26px; }
+  .btn {
+    display: inline-block;
+    margin: 0 6px;
+    padding: 10px 22px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .btn-primary { background: var(--grass-dark); color: #fff; }
+  .btn-primary:hover { background: #246231; }
+  .btn-ghost { color: var(--grass-dark); border: 1.5px solid var(--grass); }
+  .btn-ghost:hover { background: var(--grass-light); }
+
+  section { padding: 64px 0; }
+  section h2 {
+    font-size: 30px;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .kicker {
+    text-transform: uppercase;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--grass-dark);
+  }
+  .lede { color: var(--ink-soft); max-width: 640px; margin-bottom: 36px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px 24px;
+    box-shadow: 0 2px 10px rgba(26, 43, 30, .04);
+  }
+  .card .emoji { font-size: 34px; }
+  .card h3 { font-size: 19px; margin: 10px 0 6px; }
+  .card p { font-size: 15px; color: var(--ink-soft); }
+  .card .level {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--grass-dark);
+    background: var(--grass-light);
+    border-radius: 99px;
+    padding: 3px 12px;
+  }
+  .card.danger { border-color: #e9d8c4; background: #fffaf2; }
+  .card.danger .level { color: #9a6b1f; background: #f7ead2; }
+
+  .penalty {
+    background: var(--code-bg);
+    color: #d7eedd;
+    border-radius: 16px;
+    padding: 40px 38px;
+  }
+  .penalty h2 { color: #fff; }
+  .penalty .kicker { color: #7fd492; }
+  .penalty p { color: #a9c9b1; max-width: 620px; }
+  .penalty .term {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 14px;
+    background: #0c1810;
+    border: 1px solid #25402d;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-top: 24px;
+    color: #c9e8d0;
+    white-space: pre-wrap;
+  }
+  .penalty .term .red { color: #ff9a8a; }
+  .penalty .escape { margin-top: 18px; font-size: 14.5px; }
+  .penalty .escape code { color: #8fe6a3; background: #0c1810; padding: 2px 8px; border-radius: 6px; }
+
+  .how table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .how th, .how td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); }
+  .how th { font-size: 12.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); }
+  .how code { background: var(--grass-light); padding: 1px 7px; border-radius: 6px; font-size: 13.5px; }
+  .fairness {
+    margin-top: 28px;
+    background: var(--grass-light);
+    border-left: 4px solid var(--grass);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    font-size: 15px;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 36px 0 48px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  footer a { color: var(--grass-dark); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="leaf">🌱</div>
+    <h1>touch<span class="accent">-</span>grass</h1>
+    <p class="tagline">The Claude Code plugin that makes you take breaks — <strong>whether you like it or not.</strong></p>
+    <div class="install-box"><span class="dim">&gt;</span> /plugin marketplace add bradnemer/touch-grass
+<span class="dim">&gt;</span> /plugin install touch-grass@touch-grass</div>
+    <div class="hero-links">
+      <a class="btn btn-primary" href="https://github.com/bradnemer/touch-grass">View on GitHub</a>
+      <a class="btn btn-ghost" href="#how">How it works</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">Three escalating interventions</div>
+    <h2>From gentle nudge to locked door</h2>
+    <p class="lede">Sitting motionless through a four-hour agent session is a you problem. touch-grass makes it a tooling problem — inspired by <a href="https://www.npr.org/2026/05/31/nx-s1-5835263/5-minute-movement-breaks-sitting-body-electric">NPR's reporting on movement breaks</a>.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="emoji">🧘</div>
+        <h3>Stretch reminders</h3>
+        <p>After 60 minutes of active work, Claude opens its next reply by telling you to stand up — plus a macOS notification, in case the terminal is buried.</p>
+        <span class="level">Level 1 · advisory</span>
+      </div>
+      <div class="card">
+        <div class="emoji">🚶</div>
+        <h3>Walk suggestions</h3>
+        <p>Claude just launched a 35-minute background job? It tells you so, and suggests you spend that exact window outside instead of watching logs scroll.</p>
+        <span class="level">Level 2 · opportunistic</span>
+      </div>
+      <div class="card danger">
+        <div class="emoji">🚫</div>
+        <h3>The penalty box</h3>
+        <p>After 150 minutes of sustained work — tracked across <em>every</em> open Claude terminal — your prompts are blocked for a mandatory 30-minute break.</p>
+        <span class="level">Level 3 · enforced</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="penalty">
+      <div class="kicker">Yes, it has teeth</div>
+      <h2>Sneak back early? +5 minutes.</h2>
+      <p>The penalty box is shared global state — opening a second terminal doesn't help, it's the same clock. Every early-resume attempt extends the break:</p>
+      <div class="term"><span class="red">🌱 TOUCH GRASS — mandatory break in progress.
+Early-resume attempt #2: +5 min added to your break.
+23 min remaining — come back at 15:42.</span></div>
+      <p class="escape">Genuine emergency? Say <code>I touched grass</code> to override. It works — and it's logged to <code>overrides.log</code>, so your discipline audit is between you and your filesystem.</p>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="how">
+  <div class="wrap">
+    <div class="kicker">Under the hood</div>
+    <h2>Hooks, not willpower</h2>
+    <p class="lede">A skill can be ignored; hooks run in the harness itself. Plain Python 3 and a shared state file — zero dependencies.</p>
+    <table>
+      <tr><th>Hook</th><th>What it does</th></tr>
+      <tr><td><code>SessionStart / SessionEnd</code></td><td>Registers each terminal in shared global state</td></tr>
+      <tr><td><code>UserPromptSubmit</code></td><td>Heartbeat · stretch nudges · the penalty gate (exit 2 blocks the prompt)</td></tr>
+      <tr><td><code>PostToolUse</code></td><td>Detects background-task launches → walk suggestion</td></tr>
+      <tr><td><code>Stop</code></td><td>Heartbeat · fallback notification</td></tr>
+    </table>
+    <div class="fairness">
+      <strong>Fair by design.</strong> Any 20-minute gap counts as an organic break — lunch resets the clock. Every threshold is configurable via <code>/touch-grass</code>. And the whole thing fails open: a touch-grass bug can never block real work. Only the penalty box can. On purpose.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    🌱 MIT licensed · <a href="https://github.com/bradnemer/touch-grass">github.com/bradnemer/touch-grass</a> · built with <a href="https://claude.com/claude-code">Claude Code</a>, which now has to remind its own users to leave it alone
+  </div>
+</footer>
+
+</body>
+</html>
