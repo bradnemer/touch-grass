@@ -16,7 +16,7 @@ Organic breaks count: any 20+ minute gap in activity across all sessions resets 
 
 ```
 /plugin marketplace add bradnemer/touch-grass
-/plugin install touch-grass@touch-grass
+/plugin install touch-grass@grass-roots
 ```
 
 For local development:
