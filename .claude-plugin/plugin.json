@@ -1,0 +1,11 @@
+{
+  "name": "touch-grass",
+  "displayName": "Touch Grass",
+  "description": "Break enforcement for Claude Code: hourly stretch reminders, walk suggestions during long background tasks, and a mandatory penalty-box break with an escalating timer.",
+  "version": "1.0.0",
+  "author": { "name": "Brad Nemer", "email": "brad@betterbrushes.com" },
+  "homepage": "https://github.com/bradnemer/touch-grass",
+  "repository": "https://github.com/bradnemer/touch-grass",
+  "license": "MIT",
+  "keywords": ["breaks", "health", "productivity", "reminders"]
+}

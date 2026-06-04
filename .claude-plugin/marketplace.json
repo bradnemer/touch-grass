@@ -1,0 +1,11 @@
+{
+  "name": "touch-grass",
+  "owner": { "name": "Brad Nemer" },
+  "plugins": [
+    {
+      "name": "touch-grass",
+      "source": "./",
+      "description": "Break enforcement for Claude Code: stretch reminders, walk suggestions, and a hard-block penalty box."
+    }
+  ]
+}
