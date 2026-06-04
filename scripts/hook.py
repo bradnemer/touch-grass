@@ -52,7 +52,10 @@ WALK_DEBOUNCE_SEC = 1800   # at most one walk suggestion per 30 min
 
 
 def data_dir():
-    d = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.expanduser("~/.claude/touch-grass")
+    # Intentionally a fixed global dir (not $CLAUDE_PLUGIN_DATA): hooks, the
+    # CLI run via the Bash tool, and every install/dev copy of the plugin must
+    # all share ONE work clock, and CLAUDE_PLUGIN_DATA differs per context.
+    d = os.environ.get("TOUCH_GRASS_DATA_DIR") or os.path.expanduser("~/.claude/touch-grass")
     os.makedirs(d, exist_ok=True)
     return d
 

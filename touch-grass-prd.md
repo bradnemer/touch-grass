@@ -78,7 +78,7 @@ Development: `claude --plugin-dir ~/code/touch-grass`.
 
 ## State & Config
 
-All persistent data lives in `${CLAUDE_PLUGIN_DATA}` (falls back to `~/.claude/touch-grass/` when unset):
+All persistent data lives in `~/.claude/touch-grass/` (override: `TOUCH_GRASS_DATA_DIR`, used by tests). Deliberately **not** `${CLAUDE_PLUGIN_DATA}`: that var differs between hook processes, Bash-tool invocations of the CLI, and each install/dev copy of the plugin — state must be one shared file or the global work clock splits.
 
 **`config.json`** (created with defaults on first run):
 ```json

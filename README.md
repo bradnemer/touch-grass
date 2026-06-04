@@ -52,7 +52,7 @@ Requires macOS for notifications (`osascript`); everything else works anywhere `
 | `escape_phrase` | "I touched grass" | Emergency override phrase |
 | `enabled` | true | Master switch |
 
-Config and state live in `$CLAUDE_PLUGIN_DATA` (fallback: `~/.claude/touch-grass/`). Overrides are appended to `overrides.log` there, so you can audit your own discipline.
+Config and state live in `~/.claude/touch-grass/` — intentionally a fixed global dir (not `$CLAUDE_PLUGIN_DATA`, which differs between hook processes, the Bash tool, and each install/dev copy) so every Claude terminal shares one work clock. Overrides are appended to `overrides.log` there, so you can audit your own discipline. Override with `TOUCH_GRASS_DATA_DIR` (used by the tests).
 
 ## How it works
 

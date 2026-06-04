@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # touch-grass test suite — covers PRD test cases TC-01 .. TC-15.
-# Each test gets a fresh temp CLAUDE_PLUGIN_DATA, seeds state.json with
+# Each test gets a fresh temp TOUCH_GRASS_DATA_DIR, seeds state.json with
 # crafted timestamps, pipes hook-event JSON to hook.py, and asserts on
 # exit code / stdout / stderr / resulting state.
 set -u
@@ -13,9 +13,9 @@ PASS=0
 FAIL=0
 
 setup() {
-  export CLAUDE_PLUGIN_DATA="$(mktemp -d)"
+  export TOUCH_GRASS_DATA_DIR="$(mktemp -d)"
   # notifications off so tests don't shell out to osascript
-  cat > "$CLAUDE_PLUGIN_DATA/config.json" <<'EOF'
+  cat > "$TOUCH_GRASS_DATA_DIR/config.json" <<'EOF'
 {"macos_notifications": false}
 EOF
 }
@@ -33,14 +33,14 @@ st = {
     "sessions": {},
 }
 st.update(eval(sys.argv[1], {"now": now}))
-with open(os.environ["CLAUDE_PLUGIN_DATA"] + "/state.json", "w") as f:
+with open(os.environ["TOUCH_GRASS_DATA_DIR"] + "/state.json", "w") as f:
     json.dump(st, f)
 EOF
 }
 
 # run_hook <stdin-json>  -> sets RC, OUT, ERR
 run_hook() {
-  OUT_F="$CLAUDE_PLUGIN_DATA/out"; ERR_F="$CLAUDE_PLUGIN_DATA/err"
+  OUT_F="$TOUCH_GRASS_DATA_DIR/out"; ERR_F="$TOUCH_GRASS_DATA_DIR/err"
   printf '%s' "$1" | python3 "$HOOK" > "$OUT_F" 2> "$ERR_F"
   RC=$?
   OUT="$(cat "$OUT_F")"; ERR="$(cat "$ERR_F")"
@@ -51,7 +51,7 @@ state_q() {
   python3 -c "
 import json, os, time
 now = int(time.time())
-st = json.load(open(os.environ['CLAUDE_PLUGIN_DATA'] + '/state.json'))
+st = json.load(open(os.environ['TOUCH_GRASS_DATA_DIR'] + '/state.json'))
 print($1)"
 }
 
@@ -136,7 +136,7 @@ check "exit 0" test "$RC" -eq 0
 check "penalty cleared" test "$(state_q "st['penalty']['active']")" = "False"
 contains "$OUT" "escape hatch" && R=0 || R=1
 check "override context injected" test "$R" -eq 0
-check "override logged" test -s "$CLAUDE_PLUGIN_DATA/overrides.log"
+check "override logged" test -s "$TOUCH_GRASS_DATA_DIR/overrides.log"
 
 echo "TC-10 returning after break served clears penalty"
 setup
@@ -158,14 +158,14 @@ check "clock reset to now" test "$(state_q "now - st['last_break_at'] <= 5")" = 
 
 echo "TC-12 corrupt state.json regenerates and allows prompt"
 setup
-echo 'not json {{{' > "$CLAUDE_PLUGIN_DATA/state.json"
+echo 'not json {{{' > "$TOUCH_GRASS_DATA_DIR/state.json"
 run_hook '{"hook_event_name":"UserPromptSubmit","session_id":"s1","prompt":"hello"}'
 check "exit 0" test "$RC" -eq 0
 check "state regenerated" test "$(state_q "isinstance(st['sessions'], dict)")" = "True"
 
 echo "TC-13 enabled=false makes all hooks no-op"
 setup
-echo '{"enabled": false, "macos_notifications": false}' > "$CLAUDE_PLUGIN_DATA/config.json"
+echo '{"enabled": false, "macos_notifications": false}' > "$TOUCH_GRASS_DATA_DIR/config.json"
 seed_state "{'work_started_at': now-99999, 'last_break_at': now-99999, 'sessions': {'s1': {'last_seen': now-60, 'cwd': ''}}}"
 run_hook '{"hook_event_name":"UserPromptSubmit","session_id":"s1","prompt":"go"}'
 check "exit 0" test "$RC" -eq 0
